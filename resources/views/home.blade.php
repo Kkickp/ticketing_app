@@ -10,15 +10,15 @@
         </div>
     </div>
 
-    <section class="max-w-7xl mx-auto py-12 px-6">
+    <section id="events" class="max-w-7xl mx-auto py-12 px-6">
         <div class="flex justify-between items-center mb-8">
             <h2 class="text-2xl font-black uppercase italic">Event</h2>
             <div class="flex gap-2">
-                <a href="{{ route('home') }}">
+                <a href="{{ route('home') }}#events">
                     <x-ui.category-pill :label="'Semua'" :active="!request('kategori')" />
                 </a>
                 @foreach($categories as $kategori)
-                <a href="{{ route('home', ['kategori' => $kategori->id]) }}">
+                <a href="{{ route('home', ['kategori' => $kategori->id]) }}#events">
                     <x-ui.category-pill :label="$kategori->nama" :active="request('kategori') == $kategori->id" />
                 </a>
                 @endforeach

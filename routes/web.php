@@ -16,11 +16,24 @@ Route::get('/events/{event}', [EventController::class, 'show'])->name('events.sh
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 // Category routes (admin)
-Route::prefix('admin')->name('categories.')->middleware(['auth', 'verified'])->group(function () {
-    Route::get('/categories', [DashboardController::class, 'index'])->name('index');
-    Route::post('/categories', [CategoryController::class, 'store'])->name('store');
-    Route::put('/categories/{id}', [CategoryController::class, 'update'])->name('update');
-    Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->name('destroy');
+Route::prefix('admin')->name('admin.kategori.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/kategori', [CategoryController::class, 'index'])->name('index');
+    Route::post('/kategori', [CategoryController::class, 'store'])->name('store');
+    Route::put('/kategori/{id}', [CategoryController::class, 'update'])->name('update');
+    Route::delete('/kategori/{id}', [CategoryController::class, 'destroy'])->name('destroy');
+});
+
+// Event routes (admin)
+Route::prefix('admin')->name('admin.events.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/events', [EventController::class, 'index'])->name('index');
+    Route::get('/events/create', [EventController::class, 'create'])->name('create');
+    Route::post('/events', [EventController::class, 'store'])->name('store');
+    Route::delete('/events/bulk-delete', [EventController::class, 'bulkDestroy'])->name('bulk-destroy');
+    Route::get('/events/export', [EventController::class, 'exportExcel'])->name('export');
+    Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('edit');
+    Route::put('/events/{event}', [EventController::class, 'update'])->name('update');
+    Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('destroy');
+    Route::post('/events/{event}/clone', [EventController::class, 'clone'])->name('clone');
 });
 
 Route::middleware('auth')->group(function () {
