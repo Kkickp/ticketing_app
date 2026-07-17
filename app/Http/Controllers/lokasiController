@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Lokasi;
+use Illuminate\Http\Request;
+
+class LokasiController extends Controller
+{
+    public function index(Request $request)
+    {
+        // Menyediakan fitur pencarian nama lokasi seperti pada fitur filter Event Anda
+        $query = Lokasi::query();
+
+        if ($request->has('search') && $request->search != '') {
+            $query->where('nama_lokasi', 'like', '%' . $request->search . '%');
+        }
+
+        // Mengambil data yang belum di-soft-delete secara otomatis oleh Laravel
+        $locations = $query->paginate(10); 
+
+        return view('admin.locations.index', compact('locations'));
+    }
+
+    public function create()
+    {
+        return view('admin.locations.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nama_lokasi' => 'required|string|max:255',
+            'aktif' => 'required|in:Y,N',
+        ]);
+
+        Lokasi::create($request->all());
+
+        return redirect()->route('admin.locations.index')->with('success', 'Lokasi berhasil ditambahkan.');
+    }
+
+    public function edit(Lokasi $location)
+    {
+        // Menggunakan Route Model Binding (variabel nama harus match dengan route: $location)
+        return view('admin.locations.edit', compact('location'));
+    }
+
+    public function update(Request $request, Lokasi $location)
+    {
+        $request->validate([
+            'nama_lokasi' => 'required|string|max:255',
+            'aktif' => 'required|in:Y,N',
+        ]);
+
+        $location->update($request->all());
+
+        return redirect()->route('admin.locations.index')->with('success', 'Lokasi berhasil diperbarui.');
+    }
+
+    public function destroy(Lokasi $location)
+    {
+        // Karena model sudah memakai SoftDeletes, metode delete() otomatis mengisi kolom deleted_at
+        $location->delete(); 
+
+        return redirect()->route('admin.locations.index')->with('success', 'Lokasi berhasil dihapus (Soft Delete).');
+    }
+}
