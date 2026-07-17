@@ -138,21 +138,20 @@
                                     {{ $event->kategori->nama ?? 'Tidak Ada' }}
                                 </span>
                             </td>
-
-                            <!-- Date & Location -->
-                            <td>
-                                <div class="text-sm font-medium text-gray-800">
-                                    {{ $event->tanggal_waktu ? \Carbon\Carbon::parse($event->tanggal_waktu)->locale('id')->translatedFormat('d M Y, H:i') : '-' }}
-                                </div>
-                                <div class="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 text-gray-400">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                                    </svg>
-                                    {{ $event->lokasi }}
-                                </div>
-                            </td>
-
+<!-- Date & Location -->
+<td>
+    <div class="text-sm font-medium text-gray-800">
+        {{ $event->tanggal_waktu ? \Carbon\Carbon::parse($event->tanggal_waktu)->locale('id')->translatedFormat('d M Y, H:i') : '-' }}
+    </div>
+    <div class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 text-gray-400">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+        </svg>
+        <!-- Mengambil nama lokasi dari relasi model Lokasi -->
+        {{ $event->lokasi->nama_lokasi ?? 'Lokasi Tidak Ditemukan / Nonaktif' }}
+    </div>
+</td>
                             <!-- Penjualan Tiket -->
                             <td>
                                 <div class="flex flex-col gap-2 min-w-[160px]">
