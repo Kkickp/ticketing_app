@@ -68,18 +68,24 @@
                             <span class="text-error text-xs mt-1 block">{{ $message }}</span>
                         @enderror
                     </div>
-
-                    <!-- Lokasi -->
-                    <div class="space-y-2">
-                        <label class="block">
-                            <span class="text-sm font-medium text-gray-700">Lokasi</span>
-                            <span class="text-error">*</span>
-                        </label>
-                        <input type="text" name="lokasi" value="{{ old('lokasi', $event->lokasi) }}" placeholder="Contoh: Stadion Utama GBK" class="input input-bordered w-full input-sm" required>
-                        @error('lokasi')
-                            <span class="text-error text-xs mt-1 block">{{ $message }}</span>
-                        @enderror
-                    </div>
+<!-- Lokasi (Dropdown Relasional Edit) -->
+<div class="space-y-2">
+    <label class="block">
+        <span class="text-sm font-medium text-gray-700">Lokasi</span>
+        <span class="text-error">*</span>
+    </label>
+    <select name="lokasi_id" class="select select-bordered w-full select-sm" required>
+        <option value="" disabled>Pilih Lokasi</option>
+        @foreach($locations as $loc)
+            <option value="{{ $loc->id }}" {{ old('lokasi_id', $event->lokasi_id) == $loc->id ? 'selected' : '' }}>
+                {{ $loc->nama_lokasi }}
+            </option>
+        @endforeach
+    </select>
+    @error('lokasi_id')
+        <span class="text-error text-xs mt-1 block">{{ $message }}</span>
+    @enderror
+</div>
 
                     <!-- Tanggal & Waktu -->
                     <div class="space-y-2">
