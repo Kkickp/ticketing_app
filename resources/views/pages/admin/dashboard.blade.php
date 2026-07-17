@@ -1,127 +1,196 @@
 @extends('layouts.admin_layouts')
 
-@section('title', 'Manajemen Kategori')
+@section('title', 'Admin Dashboard')
 
 @section('content')
-
-<div class="container mx-auto p-10">
-    <div class="flex">
-        <h1 class="text-3xl font-semibold mb-4">Manajemen Kategori</h1>
-        <button class="btn btn-primary ml-auto" onclick="add_modal.showModal()">Tambah Kategori</button>
+<div class="container mx-auto p-6">
+    <!-- Welcome Header -->
+    <div class="card bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-md rounded-box p-8 mb-8">
+        <h1 class="text-3xl font-bold">Selamat Datang Kembali, {{ auth()->user()->name }}!</h1>
+        <p class="mt-2 text-blue-100 text-sm max-w-xl">
+            Selamat datang di panel kontrol BengTix. Gunakan panel ini untuk memantau aktivitas penjualan tiket event, stok kuota, dan memanajemen detail kategori.
+        </p>
     </div>
-    <div class="overflow-x-auto rounded-box bg-white p-5 shadow-xs">
-        <table class="table">
-            <!-- head -->
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th class="w-3/4">Nama Kategori</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($categories as $index => $category)
-                <tr>
-                    <th>{{ $index + 1 }}</th>
-                    <td>{{ $category->nama }}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary mr-2" onclick="openEditModal(this)" data-id="{{ $category->id }}" data-nama="{{ $category->nama }}">Edit</button>
-                        <button class="btn btn-sm bg-red-500 text-white" onclick="openDeleteModal(this)" data-id="{{ $category->id }}">Hapus</button>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="3" class="text-center">Tidak ada kategori tersedia.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+
+    <!-- Dashboard Analytics & Summary Cards -->
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Statistik Global</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Stat 1: Total Event -->
+        <div class="card bg-white shadow-xs border border-gray-100 p-6 flex flex-row items-center justify-between rounded-box">
+            <div>
+                <span class="text-gray-500 text-sm font-medium">Total Event</span>
+                <div class="text-3xl font-bold mt-1 text-gray-800">{{ $totalEvents }}</div>
+                <div class="text-xs text-gray-500 mt-2">
+                    <span class="text-green-600 font-semibold">{{ $upcomingCount }} Upcoming</span> • 
+                    <span class="text-warning font-semibold">{{ $ongoingCount }} Ongoing</span> • 
+                    <span class="text-gray-400 font-semibold">{{ $completedCount }} Selesai</span>
+                </div>
+            </div>
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Stat 2: Sisa Stok Tiket -->
+        <div class="card bg-white shadow-xs border border-gray-100 p-6 flex flex-row items-center justify-between rounded-box">
+            <div>
+                <span class="text-gray-500 text-sm font-medium">Sisa Stok Tiket</span>
+                <div class="text-3xl font-bold mt-1 text-gray-800">
+                    {{ number_format($globalSisaStok) }} <span class="text-sm font-normal text-gray-500">/ {{ number_format($totalCapacity) }}</span>
+                </div>
+                <div class="flex items-center gap-2 mt-2">
+                    <div class="w-24 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-green-500 h-1.5 rounded-full" style="width: {{ $globalStokPersentase }}%"></div>
+                    </div>
+                    <span class="text-xs text-green-600 font-semibold">{{ $globalStokPersentase }}% Tersedia</span>
+                </div>
+            </div>
+            <div class="p-3 bg-green-50 text-green-600 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 9a3 3 0 0 1 0-6h16a3 3 0 0 1 0 6H2Z"></path>
+                    <path d="M2 21a3 3 0 0 1 0-6h16a3 3 0 0 1 0 6H2Z"></path>
+                    <path d="M10 3v18"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Stat 3: Total Kategori -->
+        <div class="card bg-white shadow-xs border border-gray-100 p-6 flex flex-row items-center justify-between rounded-box">
+            <div>
+                <span class="text-gray-500 text-sm font-medium">Total Kategori</span>
+                <div class="text-3xl font-bold mt-1 text-gray-800">{{ $totalCategories }}</div>
+                <div class="text-xs text-gray-500 mt-2">Kategori aktif saat ini</div>
+            </div>
+            <div class="p-3 bg-purple-50 text-purple-600 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Upcoming Events -->
+    <h2 class="text-xl font-bold text-gray-800 mb-4 font-sans">3 Event Mendatang Terdekat</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        @forelse($recentEvents as $event)
+        <div class="card bg-white shadow-xs border border-gray-100 p-6 rounded-box flex flex-col justify-between hover:shadow-sm transition-all duration-300">
+            <div>
+                <!-- Badge Kategori & Status -->
+                <div class="flex justify-between items-center mb-3">
+                    <span class="badge badge-outline badge-sm py-2 px-3 border-gray-200 text-gray-600 font-medium">
+                        {{ $event->kategori->nama ?? 'Umum' }}
+                    </span>
+                    <span class="badge badge-success text-white font-semibold text-[10px] py-1.5 px-2.5">
+                        Upcoming
+                    </span>
+                </div>
+                
+                <!-- Judul Event -->
+                <h3 class="font-bold text-gray-800 text-base line-clamp-1 mb-1">{{ $event->judul }}</h3>
+                <p class="text-xs text-gray-500 flex items-center gap-1 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 text-gray-400">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {{ $event->tanggal_waktu ? $event->tanggal_waktu->locale('id')->translatedFormat('d M Y, H:i') : '-' }}
+                </p>
+                
+                <!-- Ticket Sales Progress per Ticket type -->
+                <div class="space-y-3 border-t border-gray-100 pt-3">
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Penjualan Tiket:</h4>
+                    @forelse($event->tikets as $tiket)
+                        @php
+                            $total = $tiket->stok;
+                            $terjual = $tiket->detailOrders->sum('jumlah');
+                            $sisa = max(0, $total - $terjual);
+                            $persentase_sisa = $total > 0 ? round(($sisa / $total) * 100) : 0;
+                            
+                            $icon = $tiket->tipe === 'reguler' ? '🎫' : '🎟️';
+                            $label = ucfirst($tiket->tipe);
+                            
+                            $progressColor = $persentase_sisa <= 20 ? 'bg-red-500' : 'bg-green-500';
+                            $textColor = $persentase_sisa <= 20 ? 'text-red-600 font-semibold' : 'text-gray-600';
+                        @endphp
+                        <div class="text-xs">
+                            <div class="flex justify-between items-center mb-0.5">
+                                <span class="font-medium text-gray-700">{{ $icon }} {{ $label }}</span>
+                                <span class="{{ $textColor }} text-[10px]">{{ $sisa }}/{{ $total }} Sisa</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1 overflow-hidden">
+                                <div class="{{ $progressColor }} h-1 rounded-full" style="width: {{ $persentase_sisa }}%"></div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-xs text-gray-400">Tidak ada tiket dibuat.</div>
+                    @endforelse
+                </div>
+            </div>
+            
+            <!-- View Button -->
+            <div class="mt-5 pt-3 border-t border-gray-100">
+                <a href="{{ route('admin.events.edit', $event) }}" class="btn btn-outline btn-xs w-full">
+                    Kelola Event
+                </a>
+            </div>
+        </div>
+        @empty
+        <div class="col-span-3 card bg-white border border-gray-100 p-8 text-center text-gray-400 rounded-box">
+            Belum ada event mendatang terdekat.
+        </div>
+        @endforelse
+    </div>
+
+    <!-- Quick Navigation Shortcuts -->
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Navigasi Cepat</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Shortcut 1: Manajemen Event -->
+        <a href="{{ route('admin.events.index') }}" class="card bg-white shadow-xs border border-gray-100 hover:shadow-md hover:border-blue-300 transition-all duration-300 p-6 flex flex-row items-center gap-4 rounded-box">
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-bold text-gray-800">Manajemen Event</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Kelola tiket dan rincian event</p>
+            </div>
+        </a>
+
+        <!-- Shortcut 2: Kelola Kategori -->
+        <a href="{{ route('admin.kategori.index') }}" class="card bg-white shadow-xs border border-gray-100 hover:shadow-md hover:border-purple-300 transition-all duration-300 p-6 flex flex-row items-center gap-4 rounded-box">
+            <div class="p-3 bg-purple-50 text-purple-600 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-bold text-gray-800">Manajemen Kategori</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Tambahkan/ubah kategori event</p>
+            </div>
+        </a>
+
+        <!-- Shortcut 3: Tambah Event Baru -->
+        <a href="{{ route('admin.events.create') }}" class="card bg-white shadow-xs border border-gray-100 hover:shadow-md hover:border-green-300 transition-all duration-300 p-6 flex flex-row items-center gap-4 rounded-box">
+            <div class="p-3 bg-green-50 text-green-600 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-bold text-gray-800">Tambah Event Baru</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Buat event dan tiket baru</p>
+            </div>
+        </a>
     </div>
 </div>
-
-<!-- Add Category Modal -->
-<dialog id="add_modal" class="modal">
-    <form method="POST" action="{{ route('categories.store') }}" class="modal-box">
-        @csrf
-        <h3 class="text-lg font-bold mb-4">Tambah Kategori</h3>
-        <div class="form-control w-full mb-4">
-            <label class="label mb-2">
-                <span class="label-text">Nama Kategori</span>
-            </label>
-            <input type="text" placeholder="Masukkan nama kategori" class="input input-bordered w-full" name="nama" required />
-        </div>
-        <div class="modal-action">
-            <button class="btn btn-primary" type="submit">Simpan</button>
-            <button class="btn" onclick="add_modal.close()" type="reset">Batal</button>
-        </div>
-    </form>
-</dialog>
-
-<!-- Edit Category Modal With Retrieve ID -->
-<dialog id="edit_modal" class="modal">
-    <form method="POST" class="modal-box">
-        @csrf
-        @method('PUT')
-
-        <input type="hidden" name="category_id" id="edit_category_id">
-
-        <h3 class="text-lg font-bold mb-4">Edit Kategori</h3>
-        <div class="form-control w-full mb-4">
-            <label class="label mb-2">
-                <span class="label-text">Nama Kategori</span>
-            </label>
-            <input type="text" placeholder="Masukkan nama kategori" class="input input-bordered w-full" value="Kategori Contoh" id="edit_category_name" name="nama" />
-        </div>
-        <div class="modal-action">
-            <button class="btn btn-primary" type="submit">Simpan</button>
-            <button class="btn" onclick="edit_modal.close()" type="reset">Batal</button>
-        </div>
-    </form>
-</dialog>
-
-<!-- Delete Modal -->
-<dialog id="delete_modal" class="modal">
-    <form method="POST" class="modal-box">
-        @csrf
-        @method('DELETE')
-
-        <input type="hidden" name="category_id" id="delete_category_id">
-
-        <h3 class="text-lg font-bold mb-4">Hapus Kategori</h3>
-        <p>Apakah Anda yakin ingin menghapus kategori ini?</p>
-        <div class="modal-action">
-            <button class="btn btn-primary" type="submit">Hapus</button>
-            <button class="btn" onclick="delete_modal.close()" type="reset">Batal</button>
-        </div>
-    </form>
-</dialog>
-
-<script>
-    function openEditModal(button) {
-        const name = button.dataset.nama;
-        const id = button.dataset.id;
-        const form = document.querySelector('#edit_modal form');
-
-        document.getElementById("edit_category_name").value = name;
-        document.getElementById("edit_category_id").value = id;
-
-        // Set action dengan parameter ID
-        form.action = `{{ url('/admin/categories') }}/${id}`
-
-        edit_modal.showModal();
-    }
-
-    function openDeleteModal(button) {
-        const id = button.dataset.id;
-        const form = document.querySelector('#delete_modal form');
-        document.getElementById("delete_category_id").value = id;
-
-        // Set action dengan parameter ID
-        form.action = `{{ url('/admin/categories') }}/${id}`
-
-        delete_modal.showModal();
-    }
-</script>
-
-
 @endsection

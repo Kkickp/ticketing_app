@@ -14,8 +14,8 @@
 <body class="bg-gray-50">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
-        <aside class="w-64 bg-white shadow-lg">
-            <div class="p-6">
+        <aside class="w-64 bg-white shadow-lg flex flex-col justify-between sticky top-0 h-screen">
+            <div class="p-6 flex-1 overflow-y-auto">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">Admin Panel</h2>
 
                 <!-- Sidebar Menu -->
@@ -31,18 +31,31 @@
                     </li>
 
                     <li>
-                        <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors {{ request()->routeIs('categories.*') ? 'bg-blue-50 text-blue-600' : '' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="w-5 h-5 mr-3">
-                                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 3a3 3 0 1 0 6 0a3 3 0 1 0-6 0" />
+                        <a href="{{ route('admin.kategori.index') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors {{ request()->routeIs('admin.kategori.*') ? 'bg-blue-50 text-blue-600' : '' }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3">
+                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                                <line x1="7" y1="7" x2="7.01" y2="7"></line>
                             </svg>
                             Manajemen Kategori
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('admin.events.index') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors {{ request()->routeIs('admin.events.*') ? 'bg-blue-50 text-blue-600' : '' }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Manajemen Event
                         </a>
                     </li>
                 </ul>
             </div>
 
             <!-- User Profile Section -->
-            <div class="absolute bottom-0 w-64 p-6 border-t">
+            <div class="p-6 border-t bg-white">
                 <div class="flex items-center">
                     <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
                         {{ auth()->user()->name[0] ?? 'A' }}
@@ -89,22 +102,49 @@
         </div>
     </div>
 
-    <!-- Success Toast Container -->
-    @if(session('success'))
-    <div id="successToast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
-        {{ session('success') }}
+    <!-- Toast Notifications Container -->
+    <div class="fixed top-4 right-4 z-50 flex flex-col gap-3 min-w-[300px] max-w-md">
+        @if(session('success'))
+        <div class="alert alert-success shadow-lg transition-all duration-500 ease-in-out transform translate-y-0 opacity-100 flex items-center gap-3 p-4 rounded-xl border-none text-white bg-green-600" id="toast-success">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="font-semibold text-sm">{{ session('success') }}</span>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="alert alert-error shadow-lg transition-all duration-500 ease-in-out transform translate-y-0 opacity-100 flex items-center gap-3 p-4 rounded-xl border-none text-white bg-red-600" id="toast-error">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="font-semibold text-sm">{{ session('error') }}</span>
+        </div>
+        @endif
     </div>
+
     <script>
-        setTimeout(() => {
-            const toast = document.getElementById('successToast');
-            if (toast) {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.3s';
-                setTimeout(() => toast.remove(), 300);
+        document.addEventListener('DOMContentLoaded', () => {
+            const successToast = document.getElementById('toast-success');
+            const errorToast = document.getElementById('toast-error');
+
+            const dismissToast = (toast) => {
+                if (toast) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-10px)';
+                    toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                    setTimeout(() => toast.remove(), 400);
+                }
+            };
+
+            if (successToast) {
+                setTimeout(() => dismissToast(successToast), 4000);
             }
-        }, 3000);
+            if (errorToast) {
+                setTimeout(() => dismissToast(errorToast), 4000);
+            }
+        });
     </script>
-    @endif
 </body>
 
 </html>
